@@ -1,5 +1,6 @@
 from flask import Flask, request
 
+print("MentorBot Goggins activo en la nube.")
 verify_token = 'gogginspower'
 
 app = Flask(__name__)
