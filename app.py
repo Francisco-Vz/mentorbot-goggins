@@ -18,16 +18,26 @@ def webhook():
             return 'Forbidden', 403
 
     if request.method == 'POST':
-        # 🔍 Intentamos interpretar el JSON
         try:
-            data = request.get_json()
-            print("📩 MENSAJE RECIBIDO (JSON):", data)
-        except Exception as e:
-            print("❌ Error al interpretar JSON:", e)
+            data = request.get_json(force=True)
+            print("🔔 JSON recibido completo:")
+            print(data)
 
-        # 🧾 Siempre mostramos el cuerpo crudo, por si no es JSON válido
-        raw = request.get_data(as_text=True)
-        print("🧾 RAW DATA:", raw)
+            entry = data.get("entry", [])[0]
+            changes = entry.get("changes", [])[0]
+            value = changes.get("value", {})
+            messages = value.get("messages", [])
+
+            if messages:
+                msg = messages[0]
+                phone = msg.get("from")
+                text = msg.get("text", {}).get("body")
+                print(f"📩 Mensaje de {phone}: {text}")
+            else:
+                print("⚠️ No se encontraron mensajes dentro del webhook")
+
+        except Exception as e:
+            print("❌ Error procesando el mensaje:", str(e))
 
         return 'EVENT_RECEIVED', 200
 
