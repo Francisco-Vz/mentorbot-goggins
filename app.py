@@ -1,7 +1,8 @@
 from flask import Flask, request
 import os
+import sys
 
-print("MentorBot Goggins activo en la nube.")
+print("MentorBot Goggins activo en la nube.", flush=True)
 verify_token = 'gogginspower'
 
 app = Flask(__name__)
@@ -20,8 +21,8 @@ def webhook():
     if request.method == 'POST':
         try:
             data = request.get_json(force=True)
-            print("🔔 JSON recibido completo:")
-            print(data)
+            print("🔔 JSON recibido completo:", flush=True)
+            print(data, flush=True)
 
             entry = data.get("entry", [])[0]
             changes = entry.get("changes", [])[0]
@@ -32,12 +33,12 @@ def webhook():
                 msg = messages[0]
                 phone = msg.get("from")
                 text = msg.get("text", {}).get("body")
-                print(f"📩 Mensaje de {phone}: {text}")
+                print(f"📩 Mensaje de {phone}: {text}", flush=True)
             else:
-                print("⚠️ No se encontraron mensajes dentro del webhook")
+                print("⚠️ No se encontraron mensajes dentro del webhook", flush=True)
 
         except Exception as e:
-            print("❌ Error procesando el mensaje:", str(e))
+            print("❌ Error procesando el mensaje:", str(e), flush=True)
 
         return 'EVENT_RECEIVED', 200
 
