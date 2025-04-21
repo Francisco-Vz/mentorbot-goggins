@@ -4,18 +4,16 @@ import openai
 import requests
 from dotenv import load_dotenv
 
-# 🔄 Carga de variables de entorno
 load_dotenv()
 
 app = Flask(__name__)
 
-# 🔐 Seguridad: tokens obtenidos desde las variables de entorno
-verify_token = os.getenv("VERIFY_TOKEN", "gogginspower")  # valor por defecto
-openai.api_key = os.getenv("OPENAI_API_KEY")
-whatsapp_token = os.getenv("WHATSAPP_TOKEN")
-phone_number_id = os.getenv("PHONE_NUMBER_ID")
+verify_token = 'gogginspower'
+openai.api_key = os.environ.get("OPENAI_API_KEY")
+whatsapp_token = os.environ.get("WHATSAPP_TOKEN")
+whatsapp_number_id = os.environ.get("WHATSAPP_PHONE_NUMBER_ID")
 
-print("✅ MentorBot Goggins activo y conectado a OpenAI y WhatsApp 🚀")
+print("✅ MentorBot Goggins activo y conectado a OpenAI")
 
 @app.route('/webhook', methods=['GET', 'POST'])
 def webhook():
@@ -38,21 +36,17 @@ def webhook():
                     for change in entry['changes']:
                         if 'value' in change and 'messages' in change['value']:
                             for message in change['value']['messages']:
-                                user_message = message['text']['body']
-                                sender = message['from']
-                                print(f"📨 De {sender}: {user_message}")
-
-                                # ✨ Respuesta generada con OpenAI
-                                respuesta = generar_respuesta(user_message)
-
-                                # 📤 Enviamos la respuesta por WhatsApp
-                                enviar_mensaje(sender, respuesta)
-
+                                if message.get('type') == 'text':
+                                    user_message = message['text']['body']
+                                    sender = message['from']
+                                    print(f"📨 De {sender}: {user_message}")
+                                    
+                                    respuesta = generar_respuesta(user_message)
+                                    enviar_mensaje(sender, respuesta)
         return 'EVENT_RECEIVED', 200
 
 def generar_respuesta(mensaje_usuario):
     prompt = f"Eres un mentor personal motivador como David Goggins. Alguien te escribe: '{mensaje_usuario}'. ¿Qué respuesta motivacional le darías para ayudarle a mejorar cada día?"
-
     try:
         respuesta = openai.chat.completions.create(
             model="gpt-3.5-turbo",
@@ -68,19 +62,16 @@ def generar_respuesta(mensaje_usuario):
         return "No pude procesar tu mensaje, pero sigue empujando, ¡no te detengas!"
 
 def enviar_mensaje(destinatario, mensaje):
-    url = f"https://graph.facebook.com/v18.0/{phone_number_id}/messages"
-
+    url = f"https://graph.facebook.com/v18.0/{whatsapp_number_id}/messages"
     headers = {
         "Authorization": f"Bearer {whatsapp_token}",
         "Content-Type": "application/json"
     }
-
     payload = {
         "messaging_product": "whatsapp",
         "to": destinatario,
         "text": {"body": mensaje}
     }
-
     try:
         r = requests.post(url, headers=headers, json=payload)
         print("✅ Enviado:", r.status_code, r.text)
