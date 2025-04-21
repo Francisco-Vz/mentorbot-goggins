@@ -28,25 +28,10 @@ def webhook():
 
     if request.method == 'POST':
         data = request.get_json()
-        print("📩 MENSAJE RECIBIDO COMPLETO:", data)  # Nuevo log
-
-    if data and 'entry' in data:
-        for entry in data['entry']:
-            if 'changes' in entry:
-                for change in entry['changes']:
-                    if 'value' in change and 'messages' in change['value']:
-                        for message in change['value']['messages']:
-                            user_message = message['text']['body']
-                            sender = message['from']
-                            print(f"📨 De {sender}: {user_message}")
-
-                            # Generar respuesta con OpenAI
-                            respuesta = generar_respuesta(user_message)
-
-                            # Enviar mensaje de vuelta a WhatsApp
-                            enviar_mensaje(sender, respuesta)
+        print("📦 JSON COMPLETO RECIBIDO:", data)  # <-- Agregado para ver todo
 
     return 'EVENT_RECEIVED', 200
+
 
 
 def generar_respuesta(mensaje_usuario):
