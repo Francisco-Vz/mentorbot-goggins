@@ -2,6 +2,7 @@ from flask import Flask, request
 import os
 import openai
 import requests
+import json
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -28,10 +29,25 @@ def webhook():
 
     if request.method == 'POST':
         data = request.get_json()
-        print("📦 JSON COMPLETO RECIBIDO:", data)  # <-- Agregado para ver todo
+        print("🔍 DATA COMPLETA RECIBIDA:", json.dumps(data, indent=2))
 
-    return 'EVENT_RECEIVED', 200
+        if data and 'entry' in data:
+            for entry in data['entry']:
+                if 'changes' in entry:
+                    for change in entry['changes']:
+                        if 'value' in change and 'messages' in change['value']:
+                            for message in change['value']['messages']:
+                                user_message = message['text']['body']
+                                sender = message['from']
+                                print(f"📨 De {sender}: {user_message}")
 
+                                # Generar respuesta con OpenAI
+                                respuesta = generar_respuesta(user_message)
+
+                                # Enviar mensaje de vuelta a WhatsApp
+                                enviar_mensaje(sender, respuesta)
+
+        return 'EVENT_RECEIVED', 200
 
 
 def generar_respuesta(mensaje_usuario):
@@ -49,6 +65,7 @@ def generar_respuesta(mensaje_usuario):
     except Exception as e:
         print("❌ Error al generar respuesta:", e)
         return "No pude procesar tu mensaje, pero sigue empujando, ¡no te detengas!"
+
 
 def enviar_mensaje(destinatario, mensaje):
     url = f"https://graph.facebook.com/v18.0/{whatsapp_number_id}/messages"
