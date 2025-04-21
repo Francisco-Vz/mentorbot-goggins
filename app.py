@@ -2,8 +2,8 @@ from flask import Flask, request
 import os
 import openai
 import requests
-import json
 from dotenv import load_dotenv
+import json
 
 load_dotenv()
 
@@ -12,7 +12,7 @@ app = Flask(__name__)
 verify_token = 'gogginspower'
 openai.api_key = os.environ.get("OPENAI_API_KEY")
 whatsapp_token = os.environ.get("WHATSAPP_TOKEN")
-whatsapp_number_id = os.environ.get("WHATSAPP_PHONE_NUMBER_ID")
+whatsapp_number_id = os.environ.get("PHONE_NUMBER_ID")
 
 print("✅ MentorBot Goggins activo y conectado a OpenAI")
 
@@ -29,7 +29,7 @@ def webhook():
 
     if request.method == 'POST':
         data = request.get_json()
-        print("🔍 DATA COMPLETA RECIBIDA:", json.dumps(data, indent=2))
+        print("📩 MENSAJE RECIBIDO COMPLETO:", json.dumps(data, indent=2))  # log completo
 
         if data and 'entry' in data:
             for entry in data['entry']:
@@ -49,7 +49,6 @@ def webhook():
 
         return 'EVENT_RECEIVED', 200
 
-
 def generar_respuesta(mensaje_usuario):
     prompt = f"Eres un mentor personal motivador como David Goggins. Alguien te escribe: '{mensaje_usuario}'. ¿Qué respuesta motivacional le darías para ayudarle a mejorar cada día?"
     try:
@@ -65,7 +64,6 @@ def generar_respuesta(mensaje_usuario):
     except Exception as e:
         print("❌ Error al generar respuesta:", e)
         return "No pude procesar tu mensaje, pero sigue empujando, ¡no te detengas!"
-
 
 def enviar_mensaje(destinatario, mensaje):
     url = f"https://graph.facebook.com/v18.0/{whatsapp_number_id}/messages"
